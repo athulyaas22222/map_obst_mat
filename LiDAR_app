@@ -1,0 +1,113 @@
+from tkinter import *
+from tkinter import messagebox
+import tkinter as tk
+from tkinter import ttk
+from tkinter import filedialog
+from functools import partial
+from tkinter.filedialog import askopenfile
+import networkx as nx
+import matplotlib.pyplot as plt
+import math
+import numpy as np
+import matplotlib.pyplot as plt
+from PIL import Image, ImageTk
+
+lid=Tk()
+lid.geometry("700x500")
+lid.title("LIDAR PLOT ")
+
+heading = tk.Label(lid,  text='LIDAR DATA PLOTTING ',bg = 'dark turquoise',fg = 'black',font=('lucida handwriting', 18) )  
+heading.pack()
+
+nb = ttk.Notebook(lid)
+lid1= ttk.Frame(nb, width= 600, height=450)
+nb.add(lid1, text= "  PLOT ")
+lid2 = ttk.Frame(nb, width= 600, height=450)
+nb.add(lid2, text= "   HELP  ")
+nb.pack(expand= True, fill=BOTH, padx= 5, pady=5)
+
+# select directory 
+my_dir=''
+def directories(): 
+    my_dir = filedialog.askdirectory()
+    button1.config(text=my_dir)
+    
+
+def leftscan(cd):
+    global File_data1
+    print("left_scan uploaded\n")
+    file1 = filedialog.askopenfile(mode='r',filetypes=[('.txt','*.txt')])
+    cd.config(text=file1)
+    File_data1 = np.loadtxt(file1, dtype=float)
+    
+def rightscan(cd1):
+    global File_data2
+    print("right_scan uploaded\n")
+    file2 = filedialog.askopenfile(mode='r',filetypes=[('.txt','*.txt')])
+    cd1.config(text=file2)
+    File_data2 = np.loadtxt(file2, dtype=float)
+    
+def frontscan(cd2):
+    global File_data3
+    print("front_scan uploaded\n")
+    file3 = filedialog.askopenfile(mode='r',filetypes=[('.txt','*.txt')])
+    cd2.config(text=file3)   
+    File_data3 = np.loadtxt(file3, dtype=float)
+    
+    
+file1=''
+left_scan = tk.Label(lid1, text ="Left Scan File: ",font=('Times', 12)).place(x = 6, y =80)
+cd = tk.Label(lid1, text=file1,width = 40,bg='gray82')
+cd.place(x = 110, y = 80, width = 420)
+button1=tk.Button(lid1,text ="Browse", width=10,bg='dark turquoise',font=('Comic Sans MS', 10),fg='black',command=lambda:leftscan(cd)).place(x=550, y=75)
+
+file2=''
+right_scan = tk.Label(lid1, text ="Right Scan File: ",font=('Times', 12)).place(x = 6, y =140)
+cd1 = tk.Label(lid1, text=file2,width = 40,bg='gray82')
+cd1.place(x = 110, y = 140, width = 420)
+button2=tk.Button(lid1,text ="Browse", width=10,bg='dark turquoise',font=('Comic Sans MS', 10),fg='black',command=lambda:rightscan(cd1)).place(x=550, y=135)
+
+file3=''
+front_scan = tk.Label(lid1, text ="Front Scan File: ",font=('Times', 12)).place(x = 6, y =200)
+cd2 = tk.Label(lid1, text=file3,width = 40,bg='gray82')
+cd2.place(x = 110, y = 200, width = 420)
+button2=tk.Button(lid1,text ="Browse", width=10,bg='dark turquoise',font=('Comic Sans MS', 10),fg='black',command=lambda:frontscan(cd2)).place(x=550, y=195)
+
+def generatecoord():
+    
+    global File_data1,File_data2,File_data3
+    x=[]
+    y=[]
+    for l in range(0,512):
+        i=1
+        while i<=512:
+            t=float((180/512)*i)
+            x0=File_data1[l]*math.cos(math.radians(t))
+            y0=File_data1[l]*math.sin(math.radians(t))
+            x1=File_data2[l]*math.cos(math.radians(t))
+            y1=File_data2[l]*math.sin(math.radians(t))
+            x2=File_data3[l]*math.cos(math.radians(t))
+            y2=File_data3[l]*math.sin(math.radians(t))
+            x.append([-y0,x1,-x2])
+            y.append([x0,y1,y2])
+            l=l+1
+            i=i+1
+        break
+    plt.scatter(x,y)
+    plt.show()
+
+   
+button2=tk.Button(lid1, text="PLOT THE MAP", width=15, bg='dark turquoise',font=('lucida handwriting', 12),fg='black',command = lambda:generatecoord())
+button2.place(x=280, y=320)
+
+
+help1 = tk.Label(lid2,  text='Left Scan File-->   You can upload the scan file taken from the left side of LIDAR',font=('Times', 12))  
+help1.place(x=5,y=5)
+help2 = tk.Label(lid2,  text='Right Scan File-->   You can upload the scan file taken from the right side of LIDAR',font=('Times', 12))  
+help2.place(x=5,y=30)
+help3 = tk.Label(lid2,  text='Front Scan File-->   You can upload the scan file taken from the front side of LIDAR',font=('Times', 12))  
+help3.place(x=5,y=55)
+help4 = tk.Label(lid2,  text='PLOT THE MAP-->  The scanned data files will be plotted as a map after the conversion \n of respective distances & angles to XY coordinates',font=('Times', 12))  
+help4.place(x=5,y=80)
+
+lid.mainloop()
